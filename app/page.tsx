@@ -11,7 +11,7 @@ export default function Home() {
   const nameRef = useRef<null | HTMLInputElement>(null);
   const [isNameAdded, setIsNamedAdded] = useState<boolean>(false);
 
-  
+
   type userType = {
     global_count: number;
     users: { username: string; user_count: number }[];
@@ -26,17 +26,20 @@ export default function Home() {
   });
 
 
-  // Get red shade based on ranking - more clicks = darker red
-  const getRedShade = (userCount: number, maxCount: number) => {
-    const ratio = maxCount > 0 ? userCount / maxCount : 0;
-
-    if (ratio >= 0.8) return 'from-red-700 to-red-800'; // Darkest red for top performers
-    else if (ratio >= 0.6) return 'from-red-600 to-red-700';
-    else if (ratio >= 0.4) return 'from-red-500 to-red-600';
-    else if (ratio >= 0.2) return 'from-red-400 to-red-500';
-    else return 'from-red-300 to-red-400'; // Lightest red for lowest counts
-  };
-
+const getRedShade = (userCount: number, maxCount: number, rank: number) => {
+  // Special colors for top 3 users
+  if (rank === 0) return 'from-yellow-400 to-yellow-500'; // Gold for 1st place
+  else if (rank === 1) return 'from-gray-400 to-gray-500'; // Silver for 2nd place  
+  else if (rank === 2) return 'from-amber-600 to-amber-700'; // Bronze for 3rd place
+  
+  // Regular red shades for everyone else
+  const ratio = maxCount > 0 ? userCount / maxCount : 0;
+  if (ratio >= 0.8) return 'from-red-700 to-red-800'; // Darkest red for top performers
+  else if (ratio >= 0.6) return 'from-red-600 to-red-700';
+  else if (ratio >= 0.4) return 'from-red-500 to-red-600';
+  else if (ratio >= 0.2) return 'from-red-400 to-red-500';
+  else return 'from-red-300 to-red-400'; // Lightest red for lowest counts
+};
 
   //Getting all the Users
   useEffect(() => {
@@ -109,6 +112,14 @@ export default function Home() {
     }
   };
 
+  // Calculate width percentage with log scale
+  const getWidthPercent = (count: number) => {
+    const maxCount = Math.max(...leaderboard.users.map(u => u.user_count), 1);
+    const width = (Math.log(count + 1) / Math.log(maxCount + 1)) * 100;
+    return Math.max(width, 10); // minimum width 10%
+  };
+
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* TOP SEGMENT - Leaderboard */}
@@ -130,7 +141,11 @@ export default function Home() {
         {/* Leaderboard with Stack Overflow Style Chart */}
         <div className="w-full space-y-3">
           {leaderboard.users.map((user, index) => (
-            <div key={user.username} className="w-full pb-3 border-b border-dotted border-gray-300 last:border-b-0">
+            <div
+              key={user.username}
+              className={`w-full pb-3 border-b border-dotted border-gray-300 last:border-b-0 ${user.username === username ? 'bg-gray-100 rounded-lg p-3 border-red-200' : ''
+                }`}
+            >
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-3">
                   <span className="text-lg font-bold text-gray-800 w-6">
@@ -149,8 +164,10 @@ export default function Home() {
               {/* Progress Bar */}
               <div className="w-full h-4 relative overflow-hidden">
                 <div
-                  className={`h-full bg-gradient-to-r ${getRedShade(user.user_count, Math.max(...leaderboard.users.map(u => u.user_count)))} transition-all duration-700 ease-out relative rounded-sm border border-gray-200`}
-                  style={{ width: `${Math.max((user.user_count / Math.max(...leaderboard.users.map(u => u.user_count), 1)) * 100, 10)}%` }}
+                  className={`h-full bg-gradient-to-r ${getRedShade(user.user_count,
+                    Math.max(...leaderboard.users.map(u => u.user_count), 1), index)} 
+                  transition-all duration-700 ease-out relative rounded-sm border border-gray-200`}
+                  style={{ width: `${getWidthPercent(user.user_count)}%` }}
                 >
                   {/* Subtle gradient overlay for depth */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-black opacity-10"></div>
