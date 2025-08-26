@@ -1,5 +1,6 @@
 import { saveToDB } from './utils/store.js'
 import express from 'express'
+import db from './model/db.js'
 import { handleSocket } from './socket/socket.js'
 import { Server } from 'socket.io'
 import http from 'http'
@@ -60,6 +61,35 @@ import { initClicks } from './utils/initClicks.js';
         res.json({ user_existed: false, clicks })
 
     });
+
+    // Simple admin login route
+    app.post('/auth', async (req, res) => {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({ message: "Email and password are required" });
+        }
+
+        try {
+            // Query the admins table for matching email and password
+            const [rows] = await db.query(
+                "SELECT * FROM admins WHERE email = ? AND password = ?",
+                [email, password]
+            );
+
+            if (rows.length === 0) {
+                return res.status(401).json({ message: "Invalid email or password" });
+            }
+
+            // Admin found
+            const admin = rows[0];
+            res.json({ message: "Login successful",is_admin:true });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ message: "Server error" });
+        }
+    });
+
 
     const PORT = process.env.PORT || 1111;
     server.listen(PORT, () => {

@@ -65,7 +65,6 @@ export default function Home() {
     });
 
     socket.on("leaderboard-update", (data: userType) => {
-      // console.log("Leaderboard update:", data);
       setLeaderboard(data);
     });
 
