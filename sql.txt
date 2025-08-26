@@ -1,0 +1,7 @@
+INSERT INTO users (username, user_count)
+VALUES
+  ('Alice', 10),
+  ('Bob', 5),
+  ('Charlie', 15)
+ON DUPLICATE KEY UPDATE
+  user_count = VALUES(user_count);

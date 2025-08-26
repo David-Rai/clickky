@@ -33,7 +33,7 @@ import { initClicks } from './utils/initClicks.js';
     //Storing into database every 30 seconds
     setInterval(() => {
         saveToDB()
-    }, 5 * 1000)
+    }, 30 * 1000)
 
     //Routes
     app.get('/', (req, res) => {
