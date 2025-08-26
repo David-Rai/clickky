@@ -13,6 +13,8 @@ export const initClicks = async () => {
       username: u.username,
       user_count: u.user_count
     }));
+    // Sort users by user_count descending (highest to lowest)
+    clicks.users.sort((a, b) => b.user_count - a.user_count);
 
     console.log('In-memory data initialized from database');
   } catch (err) {

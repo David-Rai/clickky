@@ -26,7 +26,6 @@ import { initClicks } from './utils/initClicks.js';
     app.use(cors(corsOption))
     app.use(express.json());
 
-
     //Socket connection handling
     handleSocket(io)
 
