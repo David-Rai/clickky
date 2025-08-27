@@ -1,4 +1,6 @@
 "use client";
+import { MdDarkMode, MdLightMode } from 'react-icons/md';
+import { FaTrophy, FaUser, FaMoon, FaSun } from 'react-icons/fa';
 import { useState, useEffect, useRef } from "react";
 import { User, Trophy, TrendingUp } from 'lucide-react';
 import axios from "axios";
@@ -7,6 +9,7 @@ import { URL } from "./config/url";
 
 export default function Home() {
   const { socket } = useSocket();
+  const [darkMode, setDarkMode] = useState(false);
   const [username, setUsername] = useState<null | string>(null);
   const nameRef = useRef<null | HTMLInputElement>(null);
   const [isNameAdded, setIsNamedAdded] = useState<boolean>(false);
@@ -25,6 +28,10 @@ export default function Home() {
     users: []
   });
 
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
 
   // Get red shade based on ranking - more clicks = darker red
   const getRedShade = (userCount: number, maxCount: number, rank: number) => {
@@ -121,74 +128,112 @@ export default function Home() {
 
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-white'
+      }`}>
       <style jsx>{`
-      .custom-scrollbar::-webkit-scrollbar {
-        width: 8px;
-      }
-      .custom-scrollbar::-webkit-scrollbar-track {
-        background: #f1f5f9;
-        border-radius: 10px;
-      }
-      .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, #ef4444, #dc2626);
-        border-radius: 10px;
-        border: 1px solid #fca5a5;
-      }
-      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(180deg, #dc2626, #b91c1c);
-      }
-      .custom-scrollbar {
-        scrollbar-width: thin;
-        scrollbar-color: #ef4444 #f1f5f9;
-      }
-    `}</style>
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: ${darkMode ? '#374151' : '#f1f5f9'};
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, #ef4444, #dc2626);
+          border-radius: 10px;
+          border: 1px solid #fca5a5;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(180deg, #dc2626, #b91c1c);
+        }
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: #ef4444 ${darkMode ? '#374151' : '#f1f5f9'};
+        }
+      `}</style>
+
+      {/* Dark Mode Toggle */}
+      <div className="absolute top-4 right-4 z-10">
+        <button
+          onClick={toggleDarkMode}
+          className={`p-3 rounded-full shadow-lg transition-all duration-300 ${darkMode
+              ? 'bg-yellow-500 hover:bg-yellow-400 text-gray-900'
+              : 'bg-gray-800 hover:bg-gray-700 text-yellow-500'
+            }`}
+        >
+          {darkMode ? <MdLightMode size={20} /> : <MdDarkMode size={20} />}
+        </button>
+      </div>
+
       {/* TOP SEGMENT - Leaderboard */}
       <div className="flex flex-col items-center p-6 h-[calc(100vh-120px)]">
         <div className="flex items-center gap-2 mb-6">
-          <Trophy className="text-red-500 w-8 h-8" />
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 ">Click Leaderboard</h1>
+          <FaTrophy className="text-red-500 w-8 h-8" />
+          <h1 className={`text-3xl md:text-4xl font-bold transition-colors duration-300 ${darkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+            Click Leaderboard
+          </h1>
         </div>
 
         {/* Global Count */}
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-2 text-2xl font-semibold">
             <TrendingUp className="text-red-600 w-6 h-6" />
-            <span className="text-gray-900">Global Count: </span>
+            <span className={`transition-colors duration-300 ${darkMode ? 'text-gray-200' : 'text-gray-900'
+              }`}>
+              Global Count:
+            </span>
             <span className="text-red-600">{leaderboard.global_count.toLocaleString()}</span>
           </div>
         </div>
 
-        {/* Leaderboard with Stack Overflow Style Chart - Fixed Height with Cool Scrollbar */}
-        <div className="w-full flex-1 overflow-y-auto overflow-x-hidden border border-gray-200 rounded-lg bg-gray-50 p-4 min-h-0 custom-scrollbar">
+        {/* Leaderboard - Responsive Width */}
+        <div className={`w-full max-w-2xl lg:max-w-xl flex-1 overflow-y-auto overflow-x-hidden border rounded-lg p-4 min-h-0 custom-scrollbar transition-colors duration-300 ${darkMode
+            ? 'border-gray-700 bg-gray-800'
+            : 'border-gray-200 bg-gray-50'
+          }`}>
           <div className="space-y-3">
             {leaderboard.users.map((user, index) => (
               <div
                 key={user.username}
-                className={`w-full pb-3 border-b border-dotted border-gray-300 last:border-b-0 ${user.username === username ? 'bg-gray-100 rounded-lg p-3 border-red-200' : ''
+                className={`w-full pb-3 border-b border-dotted last:border-b-0 transition-colors duration-300 ${user.username === username
+                    ? darkMode
+                      ? 'bg-gray-700 rounded-lg p-3 border-red-400'
+                      : 'bg-gray-200 rounded-lg p-3 border-red-200'
+                    : darkMode
+                      ? 'border-gray-600'
+                      : 'border-gray-300'
                   }`}
               >
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-3">
-                    <span className="text-lg font-bold text-gray-800 w-6">
+                    <span className={`text-lg font-bold w-6 transition-colors duration-300 ${darkMode ? 'text-gray-200' : 'text-gray-800'
+                      }`}>
                       {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
                     </span>
                     <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-gray-600" />
-                      <span className="font-semibold text-gray-900">{user.username}</span>
+                      <FaUser className={`w-4 h-4 transition-colors duration-300 ${darkMode ? 'text-gray-400' : 'text-gray-600'
+                        }`} />
+                      <span className={`font-semibold transition-colors duration-300 ${darkMode ? 'text-gray-100' : 'text-gray-900'
+                        }`}>
+                        {user.username}
+                      </span>
                     </div>
                   </div>
-                  <span className="text-sm font-semibold text-gray-800">
+                  <span className={`text-sm font-semibold transition-colors duration-300 ${darkMode ? 'text-gray-200' : 'text-gray-800'
+                    }`}>
                     {user.user_count.toLocaleString()} clicks
                   </span>
                 </div>
 
                 {/* Progress Bar */}
-                <div className="w-full h-4 relative overflow-hidden">
+                <div className={`w-full h-4 relative overflow-hidden rounded-sm ${darkMode ? 'bg-gray-700' : 'bg-gray-200'
+                  }`}>
                   <div
                     className={`h-full bg-gradient-to-r ${getRedShade(user.user_count,
                       Math.max(...leaderboard.users.map(u => u.user_count), 1), index)} 
-                  transition-all duration-700 ease-out relative rounded-sm border border-gray-200`}
+                    transition-all duration-700 ease-out relative rounded-sm ${darkMode ? 'border border-gray-600' : 'border border-gray-200'
+                      }`}
                     style={{ width: `${getWidthPercent(user.user_count)}%` }}
                   >
                     {/* Subtle gradient overlay for depth */}
@@ -202,7 +247,8 @@ export default function Home() {
       </div>
 
       {/* BOTTOM SEGMENT - Input/Button - Fixed at bottom */}
-      <div className="bg-white shadow-lg border-t-4 border-red-500 p-6 h-[120px] flex-shrink-0">
+      <div className={`shadow-lg border-t-4 border-red-500 p-6 h-[120px] flex-shrink-0 transition-colors duration-300 ${darkMode ? 'bg-gray-800' : 'bg-white'
+        }`}>
         <div className="max-w-md mx-auto">
           {isNameAdded ? (
             <div className="text-center">
@@ -217,19 +263,23 @@ export default function Home() {
           ) : (
             <div className="space-y-4">
               <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <FaUser className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${darkMode ? 'text-gray-400' : 'text-gray-400'
+                  }`} />
                 <input
                   ref={nameRef}
                   type="text"
                   placeholder="Enter your name to join the competition"
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-gray-200 focus:border-red-500 focus:outline-none text-lg"
+                  className={`w-full pl-10 pr-4 py-3 rounded-lg border-2 focus:outline-none text-lg transition-colors duration-300 ${darkMode
+                      ? 'border-gray-600 focus:border-red-500 bg-gray-700 text-white placeholder-gray-400'
+                      : 'border-gray-200 focus:border-red-500 bg-white text-gray-900 placeholder-gray-500'
+                    }`}
                 />
               </div>
               <button
                 onClick={handleSubmitName}
                 className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white px-8 py-4 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 transform hover:scale-105 font-bold text-lg shadow-lg flex items-center justify-center gap-2"
               >
-                <Trophy className="w-5 h-5" />
+                <FaTrophy className="w-5 h-5" />
                 Join the Competition!
               </button>
             </div>
