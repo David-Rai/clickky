@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Head from "next/head"
+import { Html, Head, Main, NextScript } from "next/document";
 import "./globals.css";
 import { SocketProvider } from "./context/socketContext";
 
@@ -12,6 +12,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
   <html lang="en">
        <Head>
+       <link rel="icon" type="image/png" sizes="32x32" href="/icons/32.png" />
+
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#000000" />
       </Head>
