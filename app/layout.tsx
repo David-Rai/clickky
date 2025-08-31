@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Head from "next/head"
 import "./globals.css";
 import { SocketProvider } from "./context/socketContext";
 
@@ -10,6 +11,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+       <Head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#000000" />
+      </Head>
       <body>
         <SocketProvider>{children}</SocketProvider>
       </body>

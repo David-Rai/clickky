@@ -128,7 +128,7 @@ export default function Home() {
 
 
   return (
-    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-white'
+    <div className={`min-h-[110vh] flex flex-col transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-white'
       }`}>
       <style jsx>{`
         .custom-scrollbar::-webkit-scrollbar {
@@ -247,7 +247,7 @@ export default function Home() {
       </div>
 
       {/* BOTTOM SEGMENT - Input/Button - Fixed at bottom */}
-      <div className={`shadow-lg border-t-4 border-red-500 p-6 h-[120px] flex-shrink-0 transition-colors duration-300 ${darkMode ? 'bg-gray-800' : 'bg-white'
+      <div className={`shadow-lg border-t-4 border-red-500 p-6 min-h-[120px] flex-shrink-0 transition-colors duration-300 ${darkMode ? 'bg-gray-800' : 'bg-white'
         }`}>
         <div className="max-w-md mx-auto">
           {isNameAdded ? (
