@@ -1,67 +1,186 @@
+
 "use client";
-import { MdDarkMode, MdLightMode } from 'react-icons/md';
-import { FaTrophy, FaUser, FaMoon, FaSun } from 'react-icons/fa';
+// import { MdDarkMode, MdLightMode } from 'react-icons/md';
+import LeaderboardUser from './components/LeaderBoardUser';
+import LeaderboardLoader from './components/LeaderBoardLoader';
+import GlobalCount from './components/GlobalCount';
+import GlobalCountLoader from './components/GlobalCountLoader';
+import Header from './components/Header'
+import { FaUser} from 'react-icons/fa';
+import { MdPersonAdd } from 'react-icons/md';
 import { useState, useEffect, useRef } from "react";
-import { User, Trophy, TrendingUp } from 'lucide-react';
+import {TrendingUp } from 'lucide-react';
 import axios from "axios";
 import { useSocket } from "./context/socketContext";
 import { URL } from "./config/url";
 
+// Types
+type UserType = {
+  username: string;
+  user_count: number;
+};
+
+type LeaderboardType = {
+  global_count: number;
+  users: UserType[];
+};
+
+// Leaderboard Component
+const Leaderboard = ({ 
+  leaderboard, 
+  currentUsername, 
+  isLoading 
+}: { 
+  leaderboard: LeaderboardType; 
+  currentUsername: string | null;
+  isLoading: boolean;
+}) => {
+  const getRedShade = (userCount: number, maxCount: number, rank: number) => {
+    if (rank === 0) return 'from-yellow-400 to-yellow-500';
+    else if (rank === 1) return 'from-gray-400 to-gray-500';
+    else if (rank === 2) return 'from-amber-600 to-amber-700';
+
+    const ratio = maxCount > 0 ? userCount / maxCount : 0;
+    if (ratio >= 0.8) return 'from-red-700 to-red-800';
+    else if (ratio >= 0.6) return 'from-red-600 to-red-700';
+    else if (ratio >= 0.4) return 'from-red-500 to-red-600';
+    else if (ratio >= 0.2) return 'from-red-400 to-red-500';
+    else return 'from-red-300 to-red-400';
+  };
+
+  const getWidthPercent = (count: number) => {
+    const maxCount = Math.max(...leaderboard.users.map(u => u.user_count), 1);
+    const width = (Math.log(count + 1) / Math.log(maxCount + 1)) * 100;
+    return Math.max(width, 10);
+  };
+
+  const maxCount = Math.max(...leaderboard.users.map(u => u.user_count), 1);
+
+  if (isLoading) {
+    return <LeaderboardLoader />;
+  }
+
+  return (
+    <div className="w-full max-w-2xl lg:max-w-xl flex-1 overflow-y-auto overflow-x-hidden border border-gray-700 bg-gray-800 rounded-lg p-3 md:p-4 min-h-0 custom-scrollbar">
+      <div className="space-y-3">
+        {leaderboard.users.map((user, index) => (
+          <LeaderboardUser
+            key={user.username}
+            user={user}
+            index={index}
+            currentUsername={currentUsername}
+            getRedShade={getRedShade}
+            getWidthPercent={getWidthPercent}
+            maxCount={maxCount}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Username Input Component
+const UsernameInput = ({ 
+  nameRef, 
+  onSubmit, 
+  isSubmitting 
+}: { 
+  nameRef: React.RefObject<HTMLInputElement | null>; 
+  onSubmit: () => void;
+  isSubmitting: boolean;
+}) => (
+  <div className="space-y-3 md:space-y-4">
+    <div className="relative">
+      <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
+      <input
+        ref={nameRef}
+        type="text"
+        placeholder="Enter your name to join"
+        className="w-full pl-10 md:pl-12 pr-4 py-3 md:py-4 rounded-lg border-2 border-gray-600 focus:border-red-500 bg-gray-700 text-white placeholder-gray-400 focus:outline-none text-base md:text-lg transition-colors duration-300"
+        disabled={isSubmitting}
+      />
+    </div>
+    <button
+      onClick={onSubmit}
+      disabled={isSubmitting}
+      className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 transform hover:scale-105 font-bold text-base md:text-lg shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+    >
+      {isSubmitting ? (
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          <span className="hidden md:inline">Joining...</span>
+          <span className="md:hidden">Joining...</span>
+        </div>
+      ) : (
+        <>
+          <MdPersonAdd className="w-5 h-5 md:w-6 md:h-6" />
+          <span className="hidden md:inline">Join the Competition!</span>
+          <span className="md:hidden">Join Competition</span>
+        </>
+      )}
+    </button>
+  </div>
+);
+
+// Click Button Component
+const ClickButton = ({ onIncrease, isClicking }: { onIncrease: () => void; isClicking: boolean }) => (
+  <div className="text-center">
+    <button
+      onClick={onIncrease}
+      disabled={isClicking}
+      className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 transform hover:scale-105 font-bold text-base md:text-lg shadow-lg flex items-center justify-center gap-2 disabled:opacity-75"
+    >
+      {isClicking ? (
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          <span>Clicking...</span>
+        </div>
+      ) : (
+        <>
+          <TrendingUp className="w-5 h-5 md:w-6 md:h-6" />
+          <span className="hidden md:inline">Click to Grow!</span>
+          <span className="md:hidden">Click to Grow!</span>
+        </>
+      )}
+    </button>
+  </div>
+);
+
+
+// Main Home Component
 export default function Home() {
   const { socket } = useSocket();
-  const [darkMode, setDarkMode] = useState(false);
   const [username, setUsername] = useState<null | string>(null);
   const nameRef = useRef<null | HTMLInputElement>(null);
   const [isNameAdded, setIsNamedAdded] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isClicking, setIsClicking] = useState<boolean>(false);
 
-
-  type userType = {
-    global_count: number;
-    users: { username: string; user_count: number }[];
-  }
-
-  const [leaderboard, setLeaderboard] = useState<{
-    global_count: number;
-    users: { username: string; user_count: number }[];
-  }>({
+  const [leaderboard, setLeaderboard] = useState<LeaderboardType>({
     global_count: 0,
     users: []
   });
 
-  // Toggle dark mode
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
-
-  // Get red shade based on ranking - more clicks = darker red
-  const getRedShade = (userCount: number, maxCount: number, rank: number) => {
-    // Special colors for top 3 users
-    if (rank === 0) return 'from-yellow-400 to-yellow-500'; // Gold for 1st place
-    else if (rank === 1) return 'from-gray-400 to-gray-500'; // Silver for 2nd place  
-    else if (rank === 2) return 'from-amber-600 to-amber-700'; // Bronze for 3rd place
-
-    // Regular red shades for everyone else
-    const ratio = maxCount > 0 ? userCount / maxCount : 0;
-    if (ratio >= 0.8) return 'from-red-700 to-red-800'; // Darkest red for top performers
-    else if (ratio >= 0.6) return 'from-red-600 to-red-700';
-    else if (ratio >= 0.4) return 'from-red-500 to-red-600';
-    else if (ratio >= 0.2) return 'from-red-400 to-red-500';
-    else return 'from-red-300 to-red-400'; // Lightest red for lowest counts
-  };
-
-  //Getting all the Users
+  // Getting all the Users
   useEffect(() => {
     async function get() {
-      const res = await axios.get(URL)
-      // console.log(res.data)
-      if (res) {
-        setLeaderboard(res.data)
+      try {
+        setIsLoading(true);
+        const res = await axios.get(URL);
+        if (res) {
+          setLeaderboard(res.data);
+        }
+      } catch (error) {
+        console.error("Error fetching leaderboard:", error);
+      } finally {
+        setIsLoading(false);
       }
     }
-    get()
-  }, [])
+    get();
+  }, []);
 
-  // 🔌 Socket handling
+  // Socket handling
   useEffect(() => {
     if (!socket) return;
 
@@ -71,8 +190,9 @@ export default function Home() {
       console.log("Socket connection established");
     });
 
-    socket.on("leaderboard-update", (data: userType) => {
+    socket.on("leaderboard-update", (data: LeaderboardType) => {
       setLeaderboard(data);
+      setIsClicking(false);
     });
 
     return () => {
@@ -81,7 +201,7 @@ export default function Home() {
     };
   }, [socket]);
 
-  // 📦 Load username from localStorage
+  // Load username from localStorage
   useEffect(() => {
     const stored = localStorage.getItem("username");
     if (stored) {
@@ -91,7 +211,7 @@ export default function Home() {
     }
   }, []);
 
-  // ✏️ Submit username
+  // Submit username
   const handleSubmitName = async () => {
     const name: string | undefined = nameRef?.current?.value;
     const safeName: string = name ?? "DefaultName";
@@ -101,41 +221,66 @@ export default function Home() {
       return;
     }
 
-    const res = await axios.post(`${URL}/addUser`, { username: safeName });
+    try {
+      setIsSubmitting(true);
+      const res = await axios.post(`${URL}/addUser`, { username: safeName });
 
-    if (res.data.user_existed) {
-      alert("User existed");
-    } else {
-      setIsNamedAdded(true);
-      setUsername(safeName);
-      localStorage.setItem("username", JSON.stringify(safeName));
+      if (res.data.user_existed) {
+        alert("User existed");
+      } else {
+        setIsNamedAdded(true);
+        setUsername(safeName);
+        localStorage.setItem("username", JSON.stringify(safeName));
+      }
+    } catch (error) {
+      console.error("Error adding user:", error);
+      alert("Error joining competition. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // 🔼 Increase click count
+  // Increase click count
   const handleIncrease = () => {
-    if (username) {
+    if (username && !isClicking) {
+      setIsClicking(true);
       socket?.emit("increase", username);
+      
+      setTimeout(() => {
+        setIsClicking(false);
+      }, 3000);
     }
   };
 
-  // Calculate width percentage with log scale
+  const getRedShade = (userCount: number, maxCount: number, rank: number) => {
+    if (rank === 0) return 'from-yellow-400 to-yellow-500';
+    else if (rank === 1) return 'from-gray-400 to-gray-500';
+    else if (rank === 2) return 'from-amber-600 to-amber-700';
+
+    const ratio = maxCount > 0 ? userCount / maxCount : 0;
+    if (ratio >= 0.8) return 'from-red-700 to-red-800';
+    else if (ratio >= 0.6) return 'from-red-600 to-red-700';
+    else if (ratio >= 0.4) return 'from-red-500 to-red-600';
+    else if (ratio >= 0.2) return 'from-red-400 to-red-500';
+    else return 'from-red-300 to-red-400';
+  };
+
   const getWidthPercent = (count: number) => {
     const maxCount = Math.max(...leaderboard.users.map(u => u.user_count), 1);
     const width = (Math.log(count + 1) / Math.log(maxCount + 1)) * 100;
-    return Math.max(width, 10); // minimum width 10%
+    return Math.max(width, 10);
   };
 
+  const maxCount = Math.max(...leaderboard.users.map(u => u.user_count), 1);
 
   return (
-    <div className={`min-h-[110vh] flex flex-col transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-white'
-      }`}>
+    <div className="min-h-screen max-h-screen flex flex-col bg-gray-900 overflow-hidden">
       <style jsx>{`
         .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
+          width: 6px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: ${darkMode ? '#374151' : '#f1f5f9'};
+          background: #374151;
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
@@ -148,141 +293,75 @@ export default function Home() {
         }
         .custom-scrollbar {
           scrollbar-width: thin;
-          scrollbar-color: #ef4444 ${darkMode ? '#374151' : '#f1f5f9'};
+          scrollbar-color: #ef4444 #374151;
+        }
+        
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fadeIn {
+          animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        /* Ensure mobile viewport units work correctly */
+        @supports (-webkit-touch-callout: none) {
+          .min-h-screen {
+            min-height: -webkit-fill-available;
+          }
+          .max-h-screen {
+            max-height: -webkit-fill-available;
+          }
         }
       `}</style>
 
-      {/* Dark Mode Toggle */}
-      <div className="absolute top-4 right-4 z-10">
-        <button
-          onClick={toggleDarkMode}
-          className={`p-3 rounded-full shadow-lg transition-all duration-300 ${darkMode
-              ? 'bg-yellow-500 hover:bg-yellow-400 text-gray-900'
-              : 'bg-gray-800 hover:bg-gray-700 text-yellow-500'
-            }`}
-        >
-          {darkMode ? <MdLightMode size={20} /> : <MdDarkMode size={20} />}
-        </button>
-      </div>
-
-      {/* TOP SEGMENT - Leaderboard */}
-      <div className="flex flex-col items-center p-6 h-[calc(100vh-120px)]">
-        <div className="flex items-center gap-2 mb-6">
-          <FaTrophy className="text-red-500 w-8 h-8" />
-          <h1 className={`text-3xl md:text-4xl font-bold transition-colors duration-300 ${darkMode ? 'text-white' : 'text-gray-900'
-            }`}>
-            Click Leaderboard
-          </h1>
-        </div>
+      {/* TOP SEGMENT - Header, Global Count, and Leaderboard */}
+      <div className="flex-1 flex flex-col p-4 md:p-6 min-h-0">
+        <Header />
 
         {/* Global Count */}
-        <div className="mb-8 text-center">
-          <div className="flex items-center justify-center gap-2 text-2xl font-semibold">
-            <TrendingUp className="text-red-600 w-6 h-6" />
-            <span className={`transition-colors duration-300 ${darkMode ? 'text-gray-200' : 'text-gray-900'
-              }`}>
-              Global Count:
-            </span>
-            <span className="text-red-600">{leaderboard.global_count.toLocaleString()}</span>
-          </div>
-        </div>
+        {isLoading ? <GlobalCountLoader /> : <GlobalCount count={leaderboard.global_count} />}
 
-        {/* Leaderboard - Responsive Width */}
-        <div className={`w-full max-w-2xl lg:max-w-xl flex-1 overflow-y-auto overflow-x-hidden border rounded-lg p-4 min-h-0 custom-scrollbar transition-colors duration-300 ${darkMode
-            ? 'border-gray-700 bg-gray-800'
-            : 'border-gray-200 bg-gray-50'
-          }`}>
-          <div className="space-y-3">
-            {leaderboard.users.map((user, index) => (
-              <div
-                key={user.username}
-                className={`w-full pb-3 border-b border-dotted last:border-b-0 transition-colors duration-300 ${user.username === username
-                    ? darkMode
-                      ? 'bg-gray-700 rounded-lg p-3 border-red-400'
-                      : 'bg-gray-200 rounded-lg p-3 border-red-200'
-                    : darkMode
-                      ? 'border-gray-600'
-                      : 'border-gray-300'
-                  }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-3">
-                    <span className={`text-lg font-bold w-6 transition-colors duration-300 ${darkMode ? 'text-gray-200' : 'text-gray-800'
-                      }`}>
-                      {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <FaUser className={`w-4 h-4 transition-colors duration-300 ${darkMode ? 'text-gray-400' : 'text-gray-600'
-                        }`} />
-                      <span className={`font-semibold transition-colors duration-300 ${darkMode ? 'text-gray-100' : 'text-gray-900'
-                        }`}>
-                        {user.username}
-                      </span>
-                    </div>
-                  </div>
-                  <span className={`text-sm font-semibold transition-colors duration-300 ${darkMode ? 'text-gray-200' : 'text-gray-800'
-                    }`}>
-                    {user.user_count.toLocaleString()} clicks
-                  </span>
-                </div>
-
-                {/* Progress Bar */}
-                <div className={`w-full h-4 relative overflow-hidden rounded-sm ${darkMode ? 'bg-gray-700' : 'bg-gray-200'
-                  }`}>
-                  <div
-                    className={`h-full bg-gradient-to-r ${getRedShade(user.user_count,
-                      Math.max(...leaderboard.users.map(u => u.user_count), 1), index)} 
-                    transition-all duration-700 ease-out relative rounded-sm ${darkMode ? 'border border-gray-600' : 'border border-gray-200'
-                      }`}
-                    style={{ width: `${getWidthPercent(user.user_count)}%` }}
-                  >
-                    {/* Subtle gradient overlay for depth */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-black opacity-10"></div>
-                  </div>
-                </div>
-              </div>
-            ))}
+        {/* Leaderboard - Takes remaining space */}
+        {isLoading ? (
+          <LeaderboardLoader />
+        ) : (
+          <div className="w-full max-w-2xl lg:max-w-xl mx-auto flex-1 overflow-y-auto overflow-x-hidden border border-gray-700 bg-gray-800 rounded-lg p-3 md:p-4 min-h-0 custom-scrollbar">
+            <div className="space-y-3">
+              {leaderboard.users.map((user, index) => (
+                <LeaderboardUser
+                  key={user.username}
+                  user={user}
+                  index={index}
+                  currentUsername={username}
+                  getRedShade={getRedShade}
+                  getWidthPercent={getWidthPercent}
+                  maxCount={maxCount}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* BOTTOM SEGMENT - Input/Button - Fixed at bottom */}
-      <div className={`shadow-lg border-t-4 border-red-500 p-6 min-h-[120px] flex-shrink-0 transition-colors duration-300 ${darkMode ? 'bg-gray-800' : 'bg-white'
-        }`}>
+      {/* BOTTOM SEGMENT - Action Area - Fixed at bottom */}
+      <div className="shadow-lg border-t-4 border-red-500 p-4 md:p-6 bg-gray-800 flex-shrink-0">
         <div className="max-w-md mx-auto">
           {isNameAdded ? (
-            <div className="text-center">
-              <button
-                onClick={handleIncrease}
-                className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white px-8 py-4 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 transform hover:scale-105 font-bold text-lg shadow-lg flex items-center justify-center gap-2"
-              >
-                <TrendingUp className="w-5 h-5" />
-                Click to Grow!
-              </button>
-            </div>
+            <ClickButton onIncrease={handleIncrease} isClicking={isClicking} />
           ) : (
-            <div className="space-y-4">
-              <div className="relative">
-                <FaUser className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${darkMode ? 'text-gray-400' : 'text-gray-400'
-                  }`} />
-                <input
-                  ref={nameRef}
-                  type="text"
-                  placeholder="Enter your name to join the competition"
-                  className={`w-full pl-10 pr-4 py-3 rounded-lg border-2 focus:outline-none text-lg transition-colors duration-300 ${darkMode
-                      ? 'border-gray-600 focus:border-red-500 bg-gray-700 text-white placeholder-gray-400'
-                      : 'border-gray-200 focus:border-red-500 bg-white text-gray-900 placeholder-gray-500'
-                    }`}
-                />
-              </div>
-              <button
-                onClick={handleSubmitName}
-                className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white px-8 py-4 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 transform hover:scale-105 font-bold text-lg shadow-lg flex items-center justify-center gap-2"
-              >
-                <FaTrophy className="w-5 h-5" />
-                Join the Competition!
-              </button>
-            </div>
+            <UsernameInput 
+              nameRef={nameRef} 
+              onSubmit={handleSubmitName}
+              isSubmitting={isSubmitting}
+            />
           )}
         </div>
       </div>
