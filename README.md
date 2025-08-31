@@ -1,3 +1,5 @@
+<img src="./Design/512.png"/>
+
 # Clickky
 
 A high-performance real-time application built with Next.js frontend and in-memory Node.js/Express backend. Features real-time user interactions using Socket.io with MySQL data persistence every 30 seconds, capable of handling multiple concurrent users.
