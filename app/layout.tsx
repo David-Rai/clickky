@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { Html, Head, Main, NextScript } from "next/document";
+// import { Html, Head, Main, NextScript } from "next/document";
 import "./globals.css";
 import { SocketProvider } from "./context/socketContext";
+import { Head } from "next/document";
 
 export const metadata: Metadata = {
   title: "Clickky",
