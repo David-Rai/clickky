@@ -1,4 +1,4 @@
-<img src="./Design/512.png"/>
+<img src="./Design/32.png"/>
 
 # Clickky
 
