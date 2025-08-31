@@ -7,6 +7,9 @@ A high-performance real-time application built with Next.js frontend and in-memo
 - **🌐 Live Website**: [https://clickky.vercel.app](https://clickky.vercel.app)
 - **📂 Repository**: [https://github.com/david-rai/clickky.git](https://github.com/david-rai/clickky.git)
 
+## Design
+<img src="./Design/1.png"/>
+
 ## 📋 Overview
 
 Clickky is a real-time application that provides:
