@@ -166,6 +166,10 @@ export default function Home() {
   useEffect(() => {
     async function get() {
       try {
+        if (!URL) {
+          throw new Error("NEXT_PUBLIC_SERVER_URL is not defined");
+          
+        }
         setIsLoading(true);
         const res = await axios.get(URL);
         if (res) {
