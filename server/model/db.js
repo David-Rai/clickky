@@ -6,11 +6,11 @@ configDotenv();
 console.log("database connection ...")
 
 const poolOptions = {
-  host: "gateway01.eu-central-1.prod.aws.tidbcloud.com",
-  user: "2ATCPAmibzb9x8g.root",
-  port: 4000,
-  database: "clickky",
-  password: "t6yMhpe2BvqaAbeZ",
+  host: process.env.HOST,
+  user: process.env.USER,
+  port: process.env.DBPORT,
+  database: process.env.DATABASE,
+  password: process.env.PASSWORD,
   waitForConnections: true,
   ssl: {
     ca: fs.readFileSync(new URL('./isrgrootx1.pem', import.meta.url)),

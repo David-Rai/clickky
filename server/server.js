@@ -83,7 +83,7 @@ import { initClicks } from './utils/initClicks.js';
 
             // Admin found
             const admin = rows[0];
-            res.json({ message: "Login successful",is_admin:true });
+            res.json({ message: "Login successful", is_admin: true });
         } catch (err) {
             console.error(err);
             res.status(500).json({ message: "Server error" });
