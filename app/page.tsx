@@ -1,14 +1,15 @@
+
 "use client";
 // import { MdDarkMode, MdLightMode } from 'react-icons/md';
-import LeaderboardUser from "./components/LeaderBoardUser";
-import LeaderboardLoader from "./components/LeaderBoardLoader";
-import GlobalCount from "./components/GlobalCount";
-import GlobalCountLoader from "./components/GlobalCountLoader";
-import Header from "./components/Header";
-import { FaUser } from "react-icons/fa";
-import { MdPersonAdd } from "react-icons/md";
+import LeaderboardUser from './components/LeaderBoardUser';
+import LeaderboardLoader from './components/LeaderBoardLoader';
+import GlobalCount from './components/GlobalCount';
+import GlobalCountLoader from './components/GlobalCountLoader';
+import Header from './components/Header'
+import { FaUser} from 'react-icons/fa';
+import { MdPersonAdd } from 'react-icons/md';
 import { useState, useEffect, useRef } from "react";
-import { TrendingUp } from "lucide-react";
+import {TrendingUp } from 'lucide-react';
 import axios from "axios";
 import { useSocket } from "./context/socketContext";
 import { URL } from "./config/url";
@@ -25,35 +26,35 @@ type LeaderboardType = {
 };
 
 // Leaderboard Component
-const Leaderboard = ({
-  leaderboard,
-  currentUsername,
-  isLoading,
-}: {
-  leaderboard: LeaderboardType;
+const Leaderboard = ({ 
+  leaderboard, 
+  currentUsername, 
+  isLoading 
+}: { 
+  leaderboard: LeaderboardType; 
   currentUsername: string | null;
   isLoading: boolean;
 }) => {
   const getRedShade = (userCount: number, maxCount: number, rank: number) => {
-    if (rank === 0) return "from-yellow-400 to-yellow-500";
-    else if (rank === 1) return "from-gray-400 to-gray-500";
-    else if (rank === 2) return "from-amber-600 to-amber-700";
+    if (rank === 0) return 'from-yellow-400 to-yellow-500';
+    else if (rank === 1) return 'from-gray-400 to-gray-500';
+    else if (rank === 2) return 'from-amber-600 to-amber-700';
 
     const ratio = maxCount > 0 ? userCount / maxCount : 0;
-    if (ratio >= 0.8) return "from-red-700 to-red-800";
-    else if (ratio >= 0.6) return "from-red-600 to-red-700";
-    else if (ratio >= 0.4) return "from-red-500 to-red-600";
-    else if (ratio >= 0.2) return "from-red-400 to-red-500";
-    else return "from-red-300 to-red-400";
+    if (ratio >= 0.8) return 'from-red-700 to-red-800';
+    else if (ratio >= 0.6) return 'from-red-600 to-red-700';
+    else if (ratio >= 0.4) return 'from-red-500 to-red-600';
+    else if (ratio >= 0.2) return 'from-red-400 to-red-500';
+    else return 'from-red-300 to-red-400';
   };
 
   const getWidthPercent = (count: number) => {
-    const maxCount = Math.max(...leaderboard.users.map((u) => u.user_count), 1);
+    const maxCount = Math.max(...leaderboard.users.map(u => u.user_count), 1);
     const width = (Math.log(count + 1) / Math.log(maxCount + 1)) * 100;
     return Math.max(width, 10);
   };
 
-  const maxCount = Math.max(...leaderboard.users.map((u) => u.user_count), 1);
+  const maxCount = Math.max(...leaderboard.users.map(u => u.user_count), 1);
 
   if (isLoading) {
     return <LeaderboardLoader />;
@@ -79,12 +80,12 @@ const Leaderboard = ({
 };
 
 // Username Input Component
-const UsernameInput = ({
-  nameRef,
-  onSubmit,
-  isSubmitting,
-}: {
-  nameRef: React.RefObject<HTMLInputElement | null>;
+const UsernameInput = ({ 
+  nameRef, 
+  onSubmit, 
+  isSubmitting 
+}: { 
+  nameRef: React.RefObject<HTMLInputElement | null>; 
   onSubmit: () => void;
   isSubmitting: boolean;
 }) => (
@@ -122,20 +123,22 @@ const UsernameInput = ({
 );
 
 // Click Button Component
-const ClickButton = ({ onIncrease }: { onIncrease: () => void }) => (
+const ClickButton = ({ onIncrease}: { onIncrease: () => void;}) => (
   <div className="text-center">
     <button
       onClick={onIncrease}
       className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 transform hover:scale-105 font-bold text-base md:text-lg shadow-lg flex items-center justify-center gap-2 disabled:opacity-75"
     >
-      <>
-        <TrendingUp className="w-5 h-5 md:w-6 md:h-6" />
-        <span className="hidden md:inline">Click to Grow!</span>
-        <span className="md:hidden">Click to Grow!</span>
-      </>
+
+        <>
+          <TrendingUp className="w-5 h-5 md:w-6 md:h-6" />
+          <span className="hidden md:inline">Click to Grow!</span>
+          <span className="md:hidden">Click to Grow!</span>
+        </>
     </button>
   </div>
 );
+
 
 // Main Home Component
 export default function Home() {
@@ -148,7 +151,7 @@ export default function Home() {
 
   const [leaderboard, setLeaderboard] = useState<LeaderboardType>({
     global_count: 0,
-    users: [],
+    users: []
   });
 
   // Getting all the Users
@@ -157,6 +160,7 @@ export default function Home() {
       try {
         if (!URL) {
           throw new Error("NEXT_PUBLIC_SERVER_URL is not defined");
+          
         }
         setIsLoading(true);
         const res = await axios.get(URL);
@@ -235,29 +239,30 @@ export default function Home() {
   const handleIncrease = () => {
     if (username) {
       socket?.emit("increase", username);
+      
     }
   };
 
   const getRedShade = (userCount: number, maxCount: number, rank: number) => {
-    if (rank === 0) return "from-yellow-400 to-yellow-500";
-    else if (rank === 1) return "from-gray-400 to-gray-500";
-    else if (rank === 2) return "from-amber-600 to-amber-700";
+    if (rank === 0) return 'from-yellow-400 to-yellow-500';
+    else if (rank === 1) return 'from-gray-400 to-gray-500';
+    else if (rank === 2) return 'from-amber-600 to-amber-700';
 
     const ratio = maxCount > 0 ? userCount / maxCount : 0;
-    if (ratio >= 0.8) return "from-red-700 to-red-800";
-    else if (ratio >= 0.6) return "from-red-600 to-red-700";
-    else if (ratio >= 0.4) return "from-red-500 to-red-600";
-    else if (ratio >= 0.2) return "from-red-400 to-red-500";
-    else return "from-red-300 to-red-400";
+    if (ratio >= 0.8) return 'from-red-700 to-red-800';
+    else if (ratio >= 0.6) return 'from-red-600 to-red-700';
+    else if (ratio >= 0.4) return 'from-red-500 to-red-600';
+    else if (ratio >= 0.2) return 'from-red-400 to-red-500';
+    else return 'from-red-300 to-red-400';
   };
 
   const getWidthPercent = (count: number) => {
-    const maxCount = Math.max(...leaderboard.users.map((u) => u.user_count), 1);
+    const maxCount = Math.max(...leaderboard.users.map(u => u.user_count), 1);
     const width = (Math.log(count + 1) / Math.log(maxCount + 1)) * 100;
     return Math.max(width, 10);
   };
 
-  const maxCount = Math.max(...leaderboard.users.map((u) => u.user_count), 1);
+  const maxCount = Math.max(...leaderboard.users.map(u => u.user_count), 1);
 
   return (
     <div className="min-h-screen max-h-screen flex flex-col bg-gray-900 overflow-hidden">
@@ -281,7 +286,7 @@ export default function Home() {
           scrollbar-width: thin;
           scrollbar-color: #ef4444 #374151;
         }
-
+        
         @keyframes fadeIn {
           from {
             opacity: 0;
@@ -292,7 +297,7 @@ export default function Home() {
             transform: translateY(0);
           }
         }
-
+        
         .animate-fadeIn {
           animation: fadeIn 0.5s ease-out forwards;
         }
@@ -313,11 +318,7 @@ export default function Home() {
         <Header />
 
         {/* Global Count */}
-        {isLoading ? (
-          <GlobalCountLoader />
-        ) : (
-          <GlobalCount count={leaderboard.global_count} />
-        )}
+        {isLoading ? <GlobalCountLoader /> : <GlobalCount count={leaderboard.global_count} />}
 
         {/* Leaderboard - Takes remaining space */}
         {isLoading ? (
@@ -347,8 +348,8 @@ export default function Home() {
           {isNameAdded ? (
             <ClickButton onIncrease={handleIncrease} />
           ) : (
-            <UsernameInput
-              nameRef={nameRef}
+            <UsernameInput 
+              nameRef={nameRef} 
               onSubmit={handleSubmitName}
               isSubmitting={isSubmitting}
             />
